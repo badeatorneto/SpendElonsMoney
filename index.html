@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spend Elon's Fortune</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f2f6; color: #111; }
+        .money-bar { position: sticky; top: 0; z-index: 100; background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%); color: white; border-bottom: 4px solid #1e8449; }
+        .item-card { background: white; border-bottom: 3px solid #ddd; transition: all 0.2s; }
+        .item-card:hover { transform: translateY(-3px); }
+        .btn-buy { background-color: #2ecc71; color: white; font-weight: 900; }
+        .btn-buy:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        .btn-sell { background-color: #e74c3c; color: white; font-weight: 900; }
+        .btn-sell:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-white p-10 text-center mb-4">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/3/34/Elon_Musk_Royal_Society_%28crop2%29.jpg" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-lg" alt="Elon">
+        <h1 class="text-4xl font-black uppercase tracking-tight">Spend Elon Musk's Money</h1>
+        <p class="text-gray-500 font-bold mt-2">He has $800,000,000,000. Can you actually spend it all?</p>
+    </div>
+
+    <div class="money-bar p-6 text-center shadow-xl">
+        <div id="money" class="text-5xl font-black tracking-tighter">$800,000,000,000</div>
+    </div>
+
+    <div class="max-w-6xl mx-auto p-4">
+        <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            </div>
+    </div>
+
+    <div class="max-w-xl mx-auto bg-white p-8 mt-10 mb-20 shadow-lg text-center">
+        <h2 class="text-3xl font-black uppercase mb-4">Your Receipt</h2>
+        <div id="receipt-list" class="text-left font-bold space-y-2 mb-6"></div>
+        <hr class="mb-4">
+        <div id="receipt-total" class="text-2xl font-black text-green-600">Total: $0</div>
+    </div>
+
+    <script>
+        let balance = 800000000000;
+        let inventory = {};
+
+        const items = [
+            // FOOD & SMALL (1-10)
+            { name: "Big Mac", price: 5, img: "🍔" },
+            { name: "Starbucks Latte", price: 6, img: "☕" },
+            { name: "Movie Ticket", price: 15, img: "🎟️" },
+            { name: "Video Game", price: 70, img: "🎮" },
+            { name: "AirPods Pro", price: 249, img: "🎧" },
+            { name: "Gaming PC", price: 2500, img: "🖥️" },
+            { name: "Year of Rent (NYC)", price: 48000, img: "🏢" },
+            { name: "Tesla Model S", price: 90000, img: "🚗" },
+            { name: "Gold Bar", price: 700000, img: "🧈" },
+            // LUXURY & REAL ESTATE (11-30)
+            { name: "Ferrari SF90", price: 520000, img: "🏎️" },
+            { name: "Luxury Apartment", price: 5000000, img: "🌇" },
+            { name: "Super Yacht", price: 300000000, img: "🚢" },
+            { name: "Private Jet (G700)", price: 75000000, img: "🛩️" },
+            { name: "Private Island", price: 50000000, img: "🏝️" },
+            { name: "Beverly Hills Mansion", price: 100000000, img: "🏰" },
+            { name: "Mona Lisa", price: 850000000, img: "🖼️" },
+            { name: "NBA Team", price: 3000000000, img: "🏀" },
+            { name: "NFL Team", price: 5000000000, img: "🏈" },
+            { name: "Formula 1 Team", price: 1000000000, img: "🏁" },
+            // MASSIVE & ABSURD (31-75)
+            { name: "Nuclear Power Plant", price: 12000000000, img: "☢️" },
+            { name: "Aircraft Carrier", price: 13000000000, img: "⚓" },
+            { name: "Skyscraper (Burj Khalifa)", price: 1500000000, img: "🏙️" },
+            { name: "Colonize Mars (Early Stage)", price: 50000000000, img: "🪐" },
+            { name: "Buy X (Twitter) Again", price: 44000000000, img: "❌" },
+            { name: "End World Hunger (1 Year)", price: 40000000000, img: "🍲" },
+            { name: "Build a Moon Base", price: 150000000000, img: "🌙" },
+            { name: "Buy McDonalds Corp", price: 190000000000, img: "🍟" },
+            { name: "Personal Space Station", price: 100000000000, img: "🛰️" },
+            { name: "Disney (The whole company)", price: 180000000000, img: "🐭" },
+            { name: "Coca-Cola Company", price: 260000000000, img: "🥤" },
+            { name: "Artificial General Intelligence", price: 500000000000, img: "🧠" },
+            { name: "UK GDP (Just kidding)", price: 3000000000000, img: "🇬🇧" },
+            { name: "iPhone for everyone in India", price: 70000000000, img: "📱" },
+            { name: "The Roman Colosseum", price: 1200000000, img: "🏟️" },
+            { name: "Panama Canal", price: 35000000000, img: "🌊" },
+            { name: "100 Space X Starships", price: 10000000000, img: "🚀" }
+        ];
+
+        // Fill in the rest to 75 items dynamically for demo purposes
+        for(let i=1; i<=40; i++) {
+            items.push({ name: `Luxury Item #${i}`, price: 1000000 * i, img: "💎" });
+        }
+
+        function formatMoney(num) {
+            return "$" + num.toLocaleString();
+        }
+
+        function updateUI() {
+            document.getElementById('money').innerText = formatMoney(balance);
+            renderItems();
+            renderReceipt();
+        }
+
+        function buy(index) {
+            const item = items[index];
+            if (balance >= item.price) {
+                balance -= item.price;
+                inventory[item.name] = (inventory[item.name] || 0) + 1;
+                updateUI();
+            }
+        }
+
+        function sell(index) {
+            const item = items[index];
+            if (inventory[item.name] > 0) {
+                balance += item.price;
+                inventory[item.name]--;
+                updateUI();
+            }
+        }
+
+        function renderItems() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            items.forEach((item, index) => {
+                const count = inventory[item.name] || 0;
+                const card = document.createElement('div');
+                card.className = "item-card p-6 flex flex-col items-center text-center rounded-sm";
+                card.innerHTML = `
+                    <div class="text-6xl mb-4">${item.img}</div>
+                    <div class="text-xl font-black uppercase mb-1">${item.name}</div>
+                    <div class="text-green-600 font-bold mb-4">${formatMoney(item.price)}</div>
+                    <div class="flex items-center gap-4 w-full">
+                        <button onclick="sell(${index})" class="btn-sell flex-1 py-2 rounded uppercase text-sm ${count === 0 ? 'opacity-30' : ''}" ${count === 0 ? 'disabled' : ''}>Sell</button>
+                        <input type="number" value="${count}" readonly class="w-12 text-center font-bold border-2 border-gray-200 py-2">
+                        <button onclick="buy(${index})" class="btn-buy flex-1 py-2 rounded uppercase text-sm ${balance < item.price ? 'opacity-30' : ''}" ${balance < item.price ? 'disabled' : ''}>Buy</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderReceipt() {
+            const list = document.getElementById('receipt-list');
+            const totalEl = document.getElementById('receipt-total');
+            list.innerHTML = '';
+            let totalSpent = 0;
+
+            for (const [name, count] of Object.entries(inventory)) {
+                if (count > 0) {
+                    const item = items.find(i => i.name === name);
+                    const cost = item.price * count;
+                    totalSpent += cost;
+                    list.innerHTML += `<div class="flex justify-between"><span>${name} x${count}</span><span class="text-green-600">$${cost.toLocaleString()}</span></div>`;
+                }
+            }
+            totalEl.innerText = "Total Spent: " + formatMoney(totalSpent);
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
